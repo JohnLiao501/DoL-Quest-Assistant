@@ -1,6 +1,6 @@
 {
   "name": "DoLQuestAssistant",
-  "version": "0.1.8",
+  "version": "0.2.0",
   "nickName": {
     "cn": "欲都孤儿任务助手",
     "en": "DoL Quest Assistant"
@@ -17,7 +17,9 @@
   "styleFileList": [],
   "tweeFileList": [],
   "imgFileList": [],
-  "replacePatchList": [],
+  "replacePatchList": [
+    "patches/overlay-replace.json"
+  ],
   "additionFile": [
     "README.md",
     "LICENSE",
