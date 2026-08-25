@@ -1,0 +1,38 @@
+{
+  "name": "DoLQuestAssistant",
+  "version": "0.1.2",
+  "nickName": {
+    "cn": "欲都孤儿任务助手",
+    "en": "DoL Quest Assistant"
+  },
+  "description": "在游戏内读取当前存档，显示任务进度并联网同步中文攻略。",
+  "scriptFileList_inject_early": [
+    "dist/DoLQuestAssistant.js"
+  ],
+  "scriptFileList_earlyload": [],
+  "scriptFileList_preload": [
+    "dist/preload/preload.js"
+  ],
+  "scriptFileList": [],
+  "styleFileList": [],
+  "tweeFileList": [],
+  "imgFileList": [],
+  "replacePatchList": [],
+  "additionFile": [
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "additionBinaryFile": [],
+  "addonPlugin": [],
+  "dependenceInfo": [
+    {
+      "modName": "ModLoader",
+      "version": "^2.31.2"
+    },
+    {
+      "modName": "GameVersion",
+      "version": "=0.5.11.9"
+    }
+  ]
+}

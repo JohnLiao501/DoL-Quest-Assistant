@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>任务助手正式构建测试页</title>
+    <style>
+      body { min-height: 100vh; margin: 0; color: #e9e7dc; background: #171914; font-family: Georgia, "Microsoft YaHei UI", serif; }
+      main { width: min(760px, calc(100% - 48px)); margin: 0 auto; padding: 60px 24px; }
+      section { margin-top: 25px; padding: 28px; border: 1px solid #465240; background: #20251d; }
+      h1 { color: #b9cbae; font-weight: 500; }
+      p { color: #c7c9c1; line-height: 1.8; }
+    </style>
+    <script>
+      const menuMode = new URLSearchParams(location.search).has("menu");
+      window.V = menuMode
+        ? { intro: 1, saveName: "", saveVersion: "0.5.11.9", farm_stage: 0 }
+        : {
+            intro: 0,
+            saveName: "正式构建测试角色",
+            startDate: "2026-08-25",
+            saveVersion: "0.5.11.9",
+            farm_stage: 4,
+            farm: { clearing: 69 },
+            scenePassages: [],
+            sydneySeen: [],
+            feats: { currentSave: [], allSaves: [] }
+          };
+      window.State = { variables: window.V, passage: menuMode ? "Start" : "Town" };
+      window.SugarCube = { State: window.State };
+    </script>
+  </head>
+  <body>
+    <main>
+      <h1>Degrees of Lewdity</h1>
+      <section><h2>城镇街道</h2><p>此页面直接加载正式打包脚本，用于发现源码开发环境无法暴露的问题。</p></section>
+    </main>
+    <script src="/mod/dist/DoLQuestAssistant.js"></script>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "dol-quest-assistant",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.mjs --dev",
+    "dev:mod": "vite --host 127.0.0.1 --port 4318",
+    "build": "vite build",
+    "build:mod": "vite build --config mod/vite.config.js",
+    "package:mod": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-mod.ps1",
+    "start": "node launcher.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "6.1.0",
+    "lucide-react": "1.33.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "vite": "8.2.2"
+  }
+}

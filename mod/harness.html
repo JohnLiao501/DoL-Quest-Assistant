@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>任务助手 Mod 原型测试页</title>
+    <style>
+      :root { color: #e9e7dc; background: #171914; font-family: Georgia, "Microsoft YaHei UI", serif; }
+      body { min-height: 100vh; margin: 0; background: radial-gradient(circle at 25% 0%, #32402d, #171914 55%); }
+      .game { width: min(820px, calc(100% - 40px)); margin: 0 auto; padding: 45px 20px 100px; }
+      .game header { display: flex; justify-content: space-between; padding-bottom: 22px; border-bottom: 1px solid #55614e; }
+      .game h1 { margin: 0; font-size: 30px; font-weight: 500; }
+      .game small { color: #9da595; }
+      .passage { margin-top: 28px; padding: 30px; border: 1px solid #3d4938; background: rgb(12 14 11 / 58%); box-shadow: 0 18px 60px rgb(0 0 0 / 24%); }
+      .passage h2 { color: #b4c7a8; }
+      .passage p { color: #c6c8bf; line-height: 1.85; }
+      .choices { display: grid; gap: 10px; margin-top: 25px; }
+      .choices button { padding: 12px 16px; border: 1px solid #64725b; color: #e8e9e2; background: #303b2b; text-align: left; }
+    </style>
+    <script>
+      window.V = {
+        saveName: "原型测试角色",
+        startDate: "2026-08-25",
+        saveVersion: "0.5.11.9",
+        farm_stage: 4,
+        farm: { clearing: 69 },
+        headdrive: 1,
+        maths_project: "started",
+        temple_rank: "initiate",
+        scenePassages: [],
+        sydneySeen: [],
+        feats: { currentSave: [], allSaves: [] }
+      };
+      window.State = { variables: window.V, passage: "Town" };
+      window.SugarCube = { State: window.State };
+    </script>
+  </head>
+  <body>
+    <div class="game">
+      <header><h1>Degrees of Lewdity</h1><small>ModLoader 原型环境</small></header>
+      <main class="passage">
+        <h2>城镇街道</h2>
+        <p>下午的风从街道另一端吹来。这个页面只用于确认任务助手不会改变游戏原有的字体、按钮和正文布局。</p>
+        <div class="choices"><button>前往商店</button><button>返回孤儿院</button></div>
+      </main>
+    </div>
+    <script type="module" src="/mod/src/entry.jsx"></script>
+  </body>
+</html>
