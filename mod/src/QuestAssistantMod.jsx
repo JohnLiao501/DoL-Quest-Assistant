@@ -12,6 +12,7 @@ import {
   ListChecks,
   LoaderCircle,
   LockKeyhole,
+  PanelRightOpen,
   RefreshCw,
   Repeat2,
   Route,
@@ -45,6 +46,24 @@ const STATUS_META = {
   alternate: { label: "互斥路线", icon: Route },
   recurring: { label: "重复事件", icon: Repeat2 },
 };
+
+const LAUNCHER_PREF_KEY = "dol-quest-assistant:show-launcher";
+
+function readLauncherPreference() {
+  try {
+    return window?.localStorage?.getItem(LAUNCHER_PREF_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function writeLauncherPreference(value) {
+  try {
+    window?.localStorage?.setItem(LAUNCHER_PREF_KEY, value ? "true" : "false");
+  } catch {
+    // 忽略存储异常
+  }
+}
 
 function formatTime(value) {
   if (!value) return "尚未同步";
@@ -195,8 +214,11 @@ function TaskRow({ task, page, expanded, onToggle, onConfirm, onUndo }) {
   );
 }
 
-export default function QuestAssistantMod() {
+export default function QuestAssistantMod({ embedded = false }) {
   const [open, setOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const closeTimerRef = useRef(null);
+  const [showLauncher, setShowLauncher] = useState(() => readLauncherPreference());
   const [parsed, setParsed] = useState(() => readCurrentGameState());
   const [overrides, setOverrides] = useState(() => readManualOverrides());
   const [filter, setFilter] = useState("overview");
@@ -241,11 +263,29 @@ export default function QuestAssistantMod() {
     }
   }
 
+  function closePanel() {
+    if (!open || closing) return;
+    setClosing(true);
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = window.setTimeout(() => {
+      setOpen(false);
+      setClosing(false);
+      closeTimerRef.current = null;
+    }, 180);
+  }
+
   function openPanel() {
     setOpen(true);
     if (autoRefreshAttempted.current) return;
     autoRefreshAttempted.current = true;
     void refreshWiki();
+  }
+
+  function toggleLauncherPreference() {
+    const next = !showLauncher;
+    setShowLauncher(next);
+    writeLauncherPreference(next);
+    window.dispatchEvent(new CustomEvent("dol-quest-assistant:launcher-toggle", { detail: { show: next } }));
   }
 
   function toggleOverride(taskId, completed) {
@@ -262,33 +302,131 @@ export default function QuestAssistantMod() {
 
   useEffect(() => {
     const onPassageChange = () => refreshSaveState();
+    const onLauncherToggle = (event) => {
+      if (typeof event?.detail?.show === "boolean") setShowLauncher(event.detail.show);
+    };
     window.addEventListener("dol-quest-assistant:passagechange", onPassageChange);
-    return () => window.removeEventListener("dol-quest-assistant:passagechange", onPassageChange);
+    window.addEventListener("dol-quest-assistant:launcher-toggle", onLauncherToggle);
+    return () => {
+      window.removeEventListener("dol-quest-assistant:passagechange", onPassageChange);
+      window.removeEventListener("dol-quest-assistant:launcher-toggle", onLauncherToggle);
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    };
   }, []);
+
+  useEffect(() => {
+    if (embedded && !autoRefreshAttempted.current) {
+      autoRefreshAttempted.current = true;
+      void refreshWiki();
+    }
+  }, [embedded]);
 
   useEffect(() => {
     if (!open) return undefined;
     refreshSaveState();
     const onKeyDown = (event) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") closePanel();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open]);
+  }, [open, closing]);
+
+  const mainContent = parsed ? (
+    <div className="dqa-content">
+      <div className="dqa-save-strip">
+        <div><span>当前角色</span><strong>{parsed.profileName}</strong></div>
+        <div><span>游戏版本</span><strong>{parsed.gameVersion}</strong></div>
+        <div><span>当前地区</span><strong>{localizePassage(parsed.passage, parsed.location)}</strong></div>
+        <div className="dqa-save-strip-actions">
+          <button
+            type="button"
+            className={`dqa-toggle-launcher-btn ${showLauncher ? "dqa-btn-active" : ""}`}
+            onClick={toggleLauncherPreference}
+            title={showLauncher ? "桌面悬浮球已开启，点击可关闭" : "桌面悬浮球已关闭，点击可在主屏幕显示小浮窗"}
+          >
+            <PanelRightOpen />
+            <span>{showLauncher ? "悬浮球：开" : "悬浮球：关"}</span>
+          </button>
+          <button type="button" onClick={refreshSaveState}><RefreshCw />重新读取</button>
+        </div>
+      </div>
+
+      <SyncStatus wiki={wiki} onRefresh={refreshWiki} />
+
+      <div className="dqa-stats">
+        <StatCard status="incomplete" count={counts.incomplete || 0} />
+        <StatCard status="locked" count={counts.locked || 0} />
+        <StatCard status="uncertain" count={counts.uncertain || 0} />
+        <StatCard status="completed" count={counts.completed || 0} />
+      </div>
+
+      <div className="dqa-workspace">
+        <nav className="dqa-filters" aria-label="任务筛选">
+          {FILTERS.map(({ id, label, icon: Icon }) => (
+            <button key={id} type="button" className={filter === id ? "dqa-active" : ""} onClick={() => setFilter(id)}>
+              <Icon /><span>{label}</span><b>{id === "overview" ? quests.length : counts[id] || 0}</b>
+            </button>
+          ))}
+        </nav>
+        <main className="dqa-list">
+          <div className="dqa-list-heading">
+            <div>
+              <span>{FILTERS.find((item) => item.id === filter)?.label}</span>
+              <strong>{visibleQuests.length} 项</strong>
+            </div>
+            <button type="button" onClick={() => downloadMarkdown(parsed, quests, wiki)}><Download />导出清单</button>
+          </div>
+          {visibleQuests.length ? visibleQuests.map((task) => (
+            <TaskRow
+              key={task.id}
+              task={task}
+              page={wiki.pages?.[task.wikiTitle]}
+              expanded={expanded.has(task.id)}
+              onToggle={() => setExpanded((current) => {
+                const next = new Set(current);
+                if (next.has(task.id)) next.delete(task.id); else next.add(task.id);
+                return next;
+              })}
+              onConfirm={() => toggleOverride(task.id, true)}
+              onUndo={() => toggleOverride(task.id, false)}
+            />
+          )) : <div className="dqa-empty"><CheckCircle2 /><strong>这里暂时没有任务</strong><span>换一个分类看看吧。</span></div>}
+        </main>
+      </div>
+      <footer className="dqa-footer"><AlertTriangle />任务判定以存档和当前游戏逻辑为准；攻略内容可能落后于游戏版本。</footer>
+    </div>
+  ) : (
+    <div className="dqa-waiting">
+      <LoaderCircle className="dqa-spin" />
+      <h3>尚未读取存档</h3>
+      <p>开始新游戏或读取一个存档后，任务清单才会显示。</p>
+      <button type="button" onClick={refreshSaveState}>重新检测</button>
+    </div>
+  );
+
+  if (embedded) {
+    return (
+      <div className="dqa-embedded-root">
+        {mainContent}
+      </div>
+    );
+  }
 
   return (
     <>
-      <button className={`dqa-launcher ${open ? "dqa-launcher-hidden" : ""}`} type="button" onClick={openPanel} aria-label="打开欲都孤儿任务助手">
-        <ListChecks />
-        <span>任务</span>
-        {counts.incomplete ? <b>{counts.incomplete}</b> : null}
-      </button>
+      {showLauncher ? (
+        <button className={`dqa-launcher ${open ? "dqa-launcher-hidden" : ""}`} type="button" onClick={openPanel} aria-label="打开欲都孤儿任务助手">
+          <ListChecks />
+          <span>任务</span>
+          {counts.incomplete ? <b>{counts.incomplete}</b> : null}
+        </button>
+      ) : null}
 
       {open ? (
-        <div className="dqa-overlay" role="presentation" onMouseDown={(event) => {
-          if (event.target === event.currentTarget) setOpen(false);
+        <div className={`dqa-overlay ${closing ? "dqa-overlay-closing" : ""}`} role="presentation" onMouseDown={(event) => {
+          if (event.target === event.currentTarget) closePanel();
         }}>
-          <section className="dqa-panel" role="dialog" aria-modal="true" aria-label="欲都孤儿任务助手">
+          <section className={`dqa-panel ${closing ? "dqa-panel-closing" : ""}`} role="dialog" aria-modal="true" aria-label="欲都孤儿任务助手">
             <header className="dqa-header">
               <div>
                 <span className="dqa-brand-mark"><ListChecks /></span>
@@ -297,70 +435,10 @@ export default function QuestAssistantMod() {
                   <p>读取当前存档 · 不上传游戏数据</p>
                 </div>
               </div>
-              <button className="dqa-close" type="button" onClick={() => setOpen(false)} aria-label="关闭任务助手"><X /></button>
+              <button className="dqa-close" type="button" onClick={closePanel} aria-label="关闭任务助手"><X /></button>
             </header>
 
-            {parsed ? (
-              <div className="dqa-content">
-                <div className="dqa-save-strip">
-                  <div><span>当前角色</span><strong>{parsed.profileName}</strong></div>
-                  <div><span>游戏版本</span><strong>{parsed.gameVersion}</strong></div>
-                  <div><span>当前地区</span><strong>{localizePassage(parsed.passage, parsed.location)}</strong></div>
-                  <button type="button" onClick={refreshSaveState}><RefreshCw />重新读取</button>
-                </div>
-
-                <SyncStatus wiki={wiki} onRefresh={refreshWiki} />
-
-                <div className="dqa-stats">
-                  <StatCard status="incomplete" count={counts.incomplete || 0} />
-                  <StatCard status="locked" count={counts.locked || 0} />
-                  <StatCard status="uncertain" count={counts.uncertain || 0} />
-                  <StatCard status="completed" count={counts.completed || 0} />
-                </div>
-
-                <div className="dqa-workspace">
-                  <nav className="dqa-filters" aria-label="任务筛选">
-                    {FILTERS.map(({ id, label, icon: Icon }) => (
-                      <button key={id} type="button" className={filter === id ? "dqa-active" : ""} onClick={() => setFilter(id)}>
-                        <Icon /><span>{label}</span><b>{id === "overview" ? quests.length : counts[id] || 0}</b>
-                      </button>
-                    ))}
-                  </nav>
-                  <main className="dqa-list">
-                    <div className="dqa-list-heading">
-                      <div>
-                        <span>{FILTERS.find((item) => item.id === filter)?.label}</span>
-                        <strong>{visibleQuests.length} 项</strong>
-                      </div>
-                      <button type="button" onClick={() => downloadMarkdown(parsed, quests, wiki)}><Download />导出清单</button>
-                    </div>
-                    {visibleQuests.length ? visibleQuests.map((task) => (
-                      <TaskRow
-                        key={task.id}
-                        task={task}
-                        page={wiki.pages?.[task.wikiTitle]}
-                        expanded={expanded.has(task.id)}
-                        onToggle={() => setExpanded((current) => {
-                          const next = new Set(current);
-                          if (next.has(task.id)) next.delete(task.id); else next.add(task.id);
-                          return next;
-                        })}
-                        onConfirm={() => toggleOverride(task.id, true)}
-                        onUndo={() => toggleOverride(task.id, false)}
-                      />
-                    )) : <div className="dqa-empty"><CheckCircle2 /><strong>这里暂时没有任务</strong><span>换一个分类看看吧。</span></div>}
-                  </main>
-                </div>
-                <footer className="dqa-footer"><AlertTriangle />任务判定以存档和当前游戏逻辑为准；攻略内容可能落后于游戏版本。</footer>
-              </div>
-            ) : (
-              <div className="dqa-waiting">
-                <LoaderCircle className="dqa-spin" />
-                <h3>尚未读取存档</h3>
-                <p>开始新游戏或读取一个存档后，任务清单才会显示。</p>
-                <button type="button" onClick={refreshSaveState}>重新检测</button>
-              </div>
-            )}
+            {mainContent}
           </section>
         </div>
       ) : null}

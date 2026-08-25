@@ -19,10 +19,15 @@ test("preload 阶段只检查主程序，不创建任务入口", () => {
   assert.equal(attachCalls, 0);
 });
 
-test("boot.json 使用提前注入主程序和轻量 preload", () => {
+test("boot.json 使用提前注入主程序和轻量 preload，并注册了 overlay-replace 补丁", () => {
   const boot = JSON.parse(readFileSync(new URL("../mod/boot.json", import.meta.url), "utf8"));
   assert.deepEqual(boot.scriptFileList_inject_early, ["dist/DoLQuestAssistant.js"]);
   assert.deepEqual(boot.scriptFileList_preload, ["dist/preload/preload.js"]);
+  assert.deepEqual(boot.replacePatchList, ["patches/overlay-replace.json"]);
+
+  const patch = JSON.parse(readFileSync(new URL("../mod/patches/overlay-replace.json", import.meta.url), "utf8"));
+  assert.equal(patch.twee.length, 2);
+  assert.equal(patch.twee[0].passageName, "overlayReplace");
 });
 
 test("Mod 主程序等待首个场景完成，不在 storyready 或 ModLoader 加载阶段挂载", () => {
