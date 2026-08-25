@@ -1,4 +1,4 @@
-import seedCache from "../../cache/wiki-cache.json" with { type: "json" };
+import seedCache from "./wiki-seed.json" with { type: "json" };
 
 export const WIKI_CACHE_KEY = "dol-quest-assistant:wiki-cache:v1";
 export const WIKI_REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
