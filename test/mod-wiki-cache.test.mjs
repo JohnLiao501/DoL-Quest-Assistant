@@ -2,9 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   WIKI_CACHE_KEY,
-  WIKI_REFRESH_INTERVAL_MS,
   readWikiCache,
-  shouldRefreshWiki,
   writeWikiCache,
 } from "../mod/src/wiki-cache.js";
 
@@ -31,11 +29,4 @@ test("全新安装没有本地 Wiki 缓存时仍可启动", () => {
     indexTitles: [],
     syncedAt: null,
   });
-});
-
-test("攻略每六小时自动尝试刷新一次", () => {
-  const now = Date.parse("2026-08-25T12:00:00.000Z");
-  assert.equal(shouldRefreshWiki(new Date(now - WIKI_REFRESH_INTERVAL_MS + 1).toISOString(), now), false);
-  assert.equal(shouldRefreshWiki(new Date(now - WIKI_REFRESH_INTERVAL_MS).toISOString(), now), true);
-  assert.equal(shouldRefreshWiki(null, now), true);
 });

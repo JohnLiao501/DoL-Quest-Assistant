@@ -10,7 +10,7 @@ import {
 
 test("优先读取游戏提供的 V，并生成任务分析需要的存档结构", () => {
   const scope = {
-    V: { saveName: "测试角色", startDate: "2026-08-25", saveVersion: "0.5.11.9" },
+    V: { saveName: "测试角色", startDate: "2026-08-25", saveVersion: "0.5.11.9", location: "meadow" },
     State: { passage: "Town", variables: { saveName: "不应读取" } },
   };
   assert.equal(getGameVariables(scope), scope.V);
@@ -18,6 +18,7 @@ test("优先读取游戏提供的 V，并生成任务分析需要的存档结构
     fileName: "当前游戏存档",
     gameId: "degrees-of-lewdity",
     gameVersion: "0.5.11.9",
+    location: "meadow",
     passage: "Town",
     profileName: "测试角色",
     profileKey: "测试角色:2026-08-25",
@@ -26,10 +27,11 @@ test("优先读取游戏提供的 V，并生成任务分析需要的存档结构
 });
 
 test("V 不存在时回退到 SugarCube.State.variables", () => {
-  const variables = { name: "回退角色" };
+  const variables = { name: "回退角色", sublocation: "churchyard" };
   const scope = { SugarCube: { State: { passage: "Farm", variables } } };
   assert.equal(getGameVariables(scope), variables);
   assert.equal(readCurrentGameState(scope).passage, "Farm");
+  assert.equal(readCurrentGameState(scope).location, "churchyard");
   assert.equal(readCurrentGameState(scope).profileName, "回退角色");
 });
 

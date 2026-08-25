@@ -15,11 +15,149 @@ const CHARACTER_NAMES = {
 };
 
 const PASSAGE_NAMES = {
-  Forest: "森林",
+  "Asylum Cell": "精神病院牢房",
+  "Barb Street": "倒钩街",
+  Beach: "海滩",
+  Bedroom: "卧室",
+  "Bird Tower": "鸟塔",
+  Brothel: "妓院",
+  "Cliff Street": "峭壁街",
+  "Commercial Alleyways": "商业街小巷",
+  "Connudatus Street": "康努达塔斯街",
+  "Danube Street": "多瑙河街",
+  "Docks Work": "码头工作区",
+  "Domus Street": "宅邸街",
+  "Eden Cabin": "伊甸小屋",
+  "Elk Street": "麋鹿街",
   Farm: "农场",
+  Farmland: "农田",
+  Forest: "森林",
+  "Forest Wolf Cave": "森林狼穴",
+  Hallways: "走廊",
+  "Harvest Street": "丰收街",
+  "High Street": "商业街",
+  "Industrial Alleyways": "工业区小巷",
+  "Industrial Drain": "工业区排水系统",
+  Island: "岛屿",
+  "Lake Depths": "湖泊深水区",
+  "Lake Depths Ice": "结冰的湖泊深水区",
+  "Lake Shallows": "湖泊浅水区",
+  "Lake Shallows Ice": "结冰的湖泊浅水区",
+  "Lake Underwater": "湖底",
+  "Livestock Field": "雷米农场",
+  Meadow: "草地",
+  "Mer Street": "梅尔街",
+  Moor: "荒原",
+  "Nightingale Street": "南丁格尔街",
+  "Ocean Breeze": "海风咖啡馆",
+  Orphanage: "孤儿院",
+  "Oxford Street": "牛津街",
+  Park: "公园",
+  "Prison Cell": "监狱牢房",
+  "Residential Alleyways": "住宅区小巷",
+  "Residential Drain": "住宅区排水系统",
   School: "学校",
+  Sea: "海域",
+  "Sea Beach": "海滩近海",
+  "Sea Cliffs": "悬崖近海",
+  "Sea Docks": "码头近海",
+  "Sea Rocks": "礁石近海",
+  "Starfish Street": "海星街",
+  "Strip Club": "脱衣舞俱乐部",
   Temple: "神殿",
   Town: "城镇",
+  "Underground Cell": "地下牢房",
+  "Wolf Cave": "狼穴",
+  "Wolf Cave Clearing": "狼穴空地",
+  "Wolf Street": "狼街",
+};
+
+// DoL 0.5.11.9 中所有字面量 $location 值，以及 setup.locations
+// 继承后可能写入 $location 的值。passage 是事件页时，用它确定稳定地区。
+const GAME_LOCATION_NAMES = {
+  adult_shop: "成人用品店",
+  alex_cottage: "艾利克斯的小屋",
+  alex_farm: "艾利克斯的农场",
+  alley: "小巷",
+  arcade: "游戏厅",
+  asylum: "精神病院",
+  avery_mansion: "艾弗里的庄园",
+  avery_skyscraper: "艾弗里的摩天大楼",
+  banner: "开始横幅",
+  beach: "海滩",
+  blitz: "大轰炸",
+  bog: "沼泽",
+  brothel: "妓院",
+  cabin: "伊甸小屋",
+  cafe: "咖啡馆",
+  canal: "公寓运河",
+  castle: "废弃城堡",
+  chalets: "木屋",
+  churchyard: "老教堂院子",
+  coastpath: "沿海小径",
+  commercial: "商业区",
+  compound: "麋鹿街大院",
+  compound_building: "大院建筑内部",
+  dance_studio: "舞蹈室",
+  dilapidated_shop: "破旧商店",
+  docks: "码头",
+  drain: "排水系统",
+  estate: "雷米庄园",
+  factory: "工厂",
+  farm: "农田",
+  farm_manors: "乡间庄园区",
+  flats: "公寓",
+  forest: "森林",
+  forest_shop: "森林商店",
+  forest_shop_garden: "森林商店花园",
+  home: "孤儿院",
+  hospital: "医院",
+  hotel: "酒店",
+  industrial: "工业区",
+  island: "岛屿",
+  kylar_manor: "凯拉尔庄园",
+  kylarmanor_grounds: "凯拉尔庄园庭院",
+  lake: "湖区",
+  lake_office: "湖畔考古工作站",
+  lake_ruin: "湖底遗迹",
+  landfill: "垃圾填埋场",
+  market: "市场",
+  meadow: "草地",
+  mines: "矿井",
+  moor: "荒原",
+  museum: "博物馆",
+  night_monster_lair: "夜间怪物巢穴",
+  oak: "橡树",
+  office: "办公室",
+  old_temple: "旧神殿",
+  orphanage: "孤儿院",
+  park: "公园",
+  pirate_ship: "海盗船",
+  police_station: "警察局",
+  pool: "学校泳池",
+  pound: "流浪狗收容所",
+  prison: "监狱",
+  prison_beach: "监狱外的秘密海滩",
+  promenade: "海滨长廊",
+  pub: "酒吧",
+  riding_school: "雷米的骑术学校",
+  school: "学校",
+  school_rear_courtyard: "学校后操场",
+  sea: "海域",
+  sepulchre: "墓穴",
+  sewers: "下水道",
+  shopping_centre: "购物中心",
+  shopping_centre_roof: "购物中心屋顶",
+  spa: "水疗中心",
+  strip_club: "脱衣舞俱乐部",
+  studio: "摄影工作室",
+  temple: "神殿",
+  tentworld: "触手世界",
+  tower: "鸟塔",
+  town: "镇内",
+  townhall: "市政厅",
+  underground: "地下区域",
+  wolf_cave: "狼穴",
 };
 
 const TEMPLE_RANKS = {
@@ -85,10 +223,19 @@ function mappedValue(value, mapping, fallback) {
   return mapping[value] || fallback;
 }
 
-export function localizePassage(value) {
-  if (PASSAGE_NAMES[value]) return PASSAGE_NAMES[value];
-  if (/^[\u3400-\u9fff]/u.test(String(value || ""))) return String(value);
-  return value ? "未收录场景（原名见核验依据）" : "未知场景";
+export function localizeGameLocation(value) {
+  const location = String(value || "").trim().toLowerCase();
+  return location ? GAME_LOCATION_NAMES[location] || "" : "";
+}
+
+export function localizePassage(value, locationValue) {
+  const passage = String(value || "").trim();
+  if (!passage) return "未知场景";
+  if (PASSAGE_NAMES[passage]) return PASSAGE_NAMES[passage];
+  if (/^[\u3400-\u9fff]/u.test(passage)) return passage;
+  const location = localizeGameLocation(locationValue);
+  if (location) return location;
+  return `未收录场景（原名：${passage}）`;
 }
 
 export function localizeTempleRank(value) {

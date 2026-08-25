@@ -23,7 +23,7 @@ import { analyzeQuests, getWikiTitles } from "../../src/lib/quest-analyzer.js";
 import { localizeKnownTerms, localizePassage, localizeWikiTitle } from "../../src/lib/localization.js";
 import { fetchWikiQuestData } from "../../src/lib/wiki-client.js";
 import { readCurrentGameState, readManualOverrides, writeManualOverrides } from "./game-state.js";
-import { readWikiCache, shouldRefreshWiki, writeWikiCache } from "./wiki-cache.js";
+import { readWikiCache, writeWikiCache } from "./wiki-cache.js";
 
 const FILTERS = [
   { id: "overview", label: "任务概览", icon: ListChecks },
@@ -66,7 +66,7 @@ function makeMarkdown(parsed, quests, wiki) {
     "",
     `- 角色：${parsed.profileName}`,
     `- 游戏版本：${parsed.gameVersion}`,
-    `- 当前场景：${localizePassage(parsed.passage)}`,
+    `- 当前地区：${localizePassage(parsed.passage, parsed.location)}`,
     `- 攻略状态：${wiki.source === "live" ? "在线中文攻略" : wiki.source === "cache" ? "本地缓存" : "未连接"}`,
     "",
   ];
@@ -241,6 +241,13 @@ export default function QuestAssistantMod() {
     }
   }
 
+  function openPanel() {
+    setOpen(true);
+    if (autoRefreshAttempted.current) return;
+    autoRefreshAttempted.current = true;
+    void refreshWiki();
+  }
+
   function toggleOverride(taskId, completed) {
     const next = { ...overrides };
     if (completed) next[taskId] = true;
@@ -269,15 +276,9 @@ export default function QuestAssistantMod() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
-  useEffect(() => {
-    if (!open || autoRefreshAttempted.current || !shouldRefreshWiki(wiki.syncedAt)) return;
-    autoRefreshAttempted.current = true;
-    refreshWiki();
-  }, [open, wiki.syncedAt]);
-
   return (
     <>
-      <button className={`dqa-launcher ${open ? "dqa-launcher-hidden" : ""}`} type="button" onClick={() => setOpen(true)} aria-label="打开欲都孤儿任务助手">
+      <button className={`dqa-launcher ${open ? "dqa-launcher-hidden" : ""}`} type="button" onClick={openPanel} aria-label="打开欲都孤儿任务助手">
         <ListChecks />
         <span>任务</span>
         {counts.incomplete ? <b>{counts.incomplete}</b> : null}
@@ -304,7 +305,7 @@ export default function QuestAssistantMod() {
                 <div className="dqa-save-strip">
                   <div><span>当前角色</span><strong>{parsed.profileName}</strong></div>
                   <div><span>游戏版本</span><strong>{parsed.gameVersion}</strong></div>
-                  <div><span>当前场景</span><strong>{localizePassage(parsed.passage)}</strong></div>
+                  <div><span>当前地区</span><strong>{localizePassage(parsed.passage, parsed.location)}</strong></div>
                   <button type="button" onClick={refreshSaveState}><RefreshCw />重新读取</button>
                 </div>
 

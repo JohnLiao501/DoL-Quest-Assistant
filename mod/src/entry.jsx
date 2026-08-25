@@ -5,7 +5,15 @@ import styles from "./mod.css?inline";
 
 const HOST_ID = "dol-quest-assistant-mod-root";
 const EVENT_NAMESPACE = ".dolQuestAssistant";
+const EVENT_BIND_RETRY_MS = 50;
 let reactRoot = null;
+let eventBindTimer = null;
+
+function stopEventBindRetry() {
+  if (eventBindTimer === null) return;
+  window.clearTimeout(eventBindTimer);
+  eventBindTimer = null;
+}
 
 function mount() {
   if (document.getElementById(HOST_ID)) return;
@@ -24,6 +32,7 @@ function mount() {
 }
 
 function attach() {
+  stopEventBindRetry();
   if (document.body) mount();
   else document.addEventListener("DOMContentLoaded", mount, { once: true });
 }
@@ -34,13 +43,22 @@ function bindGameEvents() {
   jq(document)
     .off(EVENT_NAMESPACE)
     .on(`:passageend${EVENT_NAMESPACE}`, () => {
+      attach();
       window.dispatchEvent(new CustomEvent("dol-quest-assistant:passagechange"));
-    })
-    .one(`:storyready${EVENT_NAMESPACE}`, attach);
+    });
   return true;
 }
 
+function bindGameEventsWhenAvailable() {
+  if (bindGameEvents()) {
+    eventBindTimer = null;
+    return;
+  }
+  eventBindTimer = window.setTimeout(bindGameEventsWhenAvailable, EVENT_BIND_RETRY_MS);
+}
+
 function detach() {
+  stopEventBindRetry();
   const jq = window.jQuery || window.$;
   if (typeof jq === "function") jq(document).off(EVENT_NAMESPACE);
   reactRoot?.unmount();
@@ -52,9 +70,4 @@ window.dolQuestAssistant = { attach, detach, refresh() {
   window.dispatchEvent(new CustomEvent("dol-quest-assistant:passagechange"));
 } };
 
-const waitingForStory = bindGameEvents();
-const gameStateReady = Boolean(window.V || window.State?.variables || window.SugarCube?.State?.variables);
-if (!waitingForStory || gameStateReady) attach();
-setTimeout(() => {
-  if (!document.getElementById(HOST_ID)) attach();
-}, 3_000);
+bindGameEventsWhenAvailable();

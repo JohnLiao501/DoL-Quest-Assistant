@@ -12,7 +12,19 @@
       p { color: #c7c9c1; line-height: 1.8; }
     </style>
     <script>
-      const menuMode = new URLSearchParams(location.search).has("menu");
+      const harnessMode = new URLSearchParams(location.search);
+      const menuMode = harnessMode.has("menu");
+      const testPassage = harnessMode.get("passage") || "Town";
+      const testLocation = harnessMode.get("location") || "";
+      if (harnessMode.has("mockWikiOffline")) {
+        document.documentElement.dataset.dqaWikiFetchCalls = "0";
+        window.fetch = async () => {
+          document.documentElement.dataset.dqaWikiFetchCalls = String(
+            Number(document.documentElement.dataset.dqaWikiFetchCalls) + 1,
+          );
+          throw new TypeError("模拟攻略断网");
+        };
+      }
       window.V = menuMode
         ? { intro: 1, saveName: "", saveVersion: "0.5.11.9", farm_stage: 0 }
         : {
@@ -20,21 +32,42 @@
             saveName: "正式构建测试角色",
             startDate: "2026-08-25",
             saveVersion: "0.5.11.9",
+            location: testLocation,
             farm_stage: 4,
             farm: { clearing: 69 },
             scenePassages: [],
             sydneySeen: [],
             feats: { currentSave: [], allSaves: [] }
           };
-      window.State = { variables: window.V, passage: menuMode ? "Start" : "Town" };
+      window.State = { variables: window.V, passage: menuMode ? "Start" : testPassage };
       window.SugarCube = { State: window.State };
+      window.jQuery = window.$ = () => {
+        const api = {
+          off() { return api; },
+          on(eventName, listener) {
+            document.addEventListener(eventName.split(".")[0], listener);
+            return api;
+          },
+          one(eventName, listener) {
+            document.addEventListener(eventName.split(".")[0], listener, { once: true });
+            return api;
+          },
+        };
+        return api;
+      };
     </script>
   </head>
   <body>
     <main>
       <h1>Degrees of Lewdity</h1>
-      <section><h2>城镇街道</h2><p>此页面直接加载正式打包脚本，用于发现源码开发环境无法暴露的问题。</p></section>
+      <section>
+        <h2>城镇街道</h2>
+        <p>此页面直接加载正式打包脚本，用于发现源码开发环境无法暴露的问题。</p>
+        <button type="button" onclick="document.dispatchEvent(new Event(':storyready'))">模拟 storyready（仍在加载）</button>
+        <button type="button" onclick="document.dispatchEvent(new Event(':passageend'))">模拟首个场景完成</button>
+      </section>
     </main>
     <script src="/mod/dist/DoLQuestAssistant.js"></script>
+    <script src="/mod/runtime/preload.js"></script>
   </body>
 </html>

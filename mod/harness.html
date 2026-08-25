@@ -18,6 +18,16 @@
       .choices button { padding: 12px 16px; border: 1px solid #64725b; color: #e8e9e2; background: #303b2b; text-align: left; }
     </style>
     <script>
+      const harnessMode = new URLSearchParams(location.search);
+      if (harnessMode.has("mockWikiOffline")) {
+        document.documentElement.dataset.dqaWikiFetchCalls = "0";
+        window.fetch = async () => {
+          document.documentElement.dataset.dqaWikiFetchCalls = String(
+            Number(document.documentElement.dataset.dqaWikiFetchCalls) + 1,
+          );
+          throw new TypeError("模拟攻略断网");
+        };
+      }
       window.V = {
         saveName: "原型测试角色",
         startDate: "2026-08-25",
@@ -33,6 +43,20 @@
       };
       window.State = { variables: window.V, passage: "Town" };
       window.SugarCube = { State: window.State };
+      window.jQuery = window.$ = () => {
+        const api = {
+          off() { return api; },
+          on(eventName, listener) {
+            document.addEventListener(eventName.split(".")[0], listener);
+            return api;
+          },
+          one(eventName, listener) {
+            document.addEventListener(eventName.split(".")[0], listener, { once: true });
+            return api;
+          },
+        };
+        return api;
+      };
     </script>
   </head>
   <body>
@@ -41,9 +65,17 @@
       <main class="passage">
         <h2>城镇街道</h2>
         <p>下午的风从街道另一端吹来。这个页面只用于确认任务助手不会改变游戏原有的字体、按钮和正文布局。</p>
-        <div class="choices"><button>前往商店</button><button>返回孤儿院</button></div>
+        <div class="choices">
+          <button type="button" onclick="document.dispatchEvent(new Event(':storyready'))">模拟 storyready（仍在加载）</button>
+          <button type="button" onclick="document.dispatchEvent(new Event(':passageend'))">模拟首个场景完成</button>
+          <button>前往商店</button>
+          <button>返回孤儿院</button>
+        </div>
       </main>
     </div>
-    <script type="module" src="/mod/src/entry.jsx"></script>
+    <script type="module">
+      import "/mod/src/entry.jsx";
+      import "/mod/runtime/preload.js";
+    </script>
   </body>
 </html>

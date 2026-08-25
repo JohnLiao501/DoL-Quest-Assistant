@@ -1,7 +1,6 @@
 import seedCache from "./wiki-seed.json" with { type: "json" };
 
 export const WIKI_CACHE_KEY = "dol-quest-assistant:wiki-cache:v1";
-export const WIKI_REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
 
 function normalize(value) {
   return {
@@ -34,9 +33,4 @@ export function writeWikiCache(update, storage = globalThis.localStorage) {
     // 缓存写入失败不应阻断任务判定。
   }
   return next;
-}
-
-export function shouldRefreshWiki(syncedAt, now = Date.now()) {
-  const timestamp = Date.parse(syncedAt || "");
-  return !Number.isFinite(timestamp) || now - timestamp >= WIKI_REFRESH_INTERVAL_MS;
 }
