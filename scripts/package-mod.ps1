@@ -43,9 +43,6 @@ Copy-Item -LiteralPath (Join-Path $projectRoot "LICENSE") -Destination $stageDir
 Copy-Item -LiteralPath (Join-Path $projectRoot "THIRD_PARTY_NOTICES.md") -Destination $stageDirectory
 Copy-Item -LiteralPath (Join-Path $distDirectory "DoLQuestAssistant.js") -Destination (Join-Path $stageDirectory "dist")
 Copy-Item -LiteralPath (Join-Path $modDirectory "runtime\preload.js") -Destination (Join-Path $stageDirectory "dist\preload")
-if (Test-Path -LiteralPath (Join-Path $modDirectory "patches")) {
-  Copy-Item -LiteralPath (Join-Path $modDirectory "patches") -Destination $stageDirectory -Recurse
-}
 
 Compress-Archive -Path (Join-Path $stageDirectory "*") -DestinationPath $archivePath -CompressionLevel Optimal -Force
 Remove-Item -LiteralPath $stageDirectory -Recurse -Force
