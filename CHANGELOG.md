@@ -2,6 +2,13 @@
 
 本项目的 Windows 独立版与游戏内 Mod 使用各自的版本号。
 
+## Mod 0.2.1 - 2026-08-26
+
+- **消除加载警告与兼容性增强**：
+  - 移除 ModLoader 静态 Twee 文本补丁（`replacePatchList`），改由 JS / DOM 动态注入完全接管日志“任务”标签栏挂载。
+  - 彻底消除在移动端、各类汉化改版（如 maplebirch 补丁）或多 Mod 环境下，因源码字符微调导致 ModLoader 加载页面报 `logWarning applyReplacePatcher() passage replace 0 ... positions []` 的警告。
+  - 避免与其他修改游戏原生 `overlayReplace` 段落的 Mod 发生潜在的 Twee 补丁覆盖冲突。
+
 ## Mod 0.2.0 - 2026-08-26
 
 - **日志模块原生融合**：
