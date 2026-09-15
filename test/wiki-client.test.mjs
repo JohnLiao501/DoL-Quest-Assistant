@@ -135,3 +135,86 @@ test("HTTP 403 与浏览器网络或 CORS 错误可被明确区分", async () =>
     },
   );
 });
+
+test("当启用 fallbackToEn 且中文 Wiki 缺失条目时，自动向英文 Wiki 请求并打上 sourceWiki: en", async () => {
+  const fetchImpl = async (url) => {
+    const urlObj = new URL(url);
+    const titles = urlObj.searchParams.get("titles");
+    if (urlObj.hostname === "cn.wiki.test") {
+      return jsonResponse({
+        query: {
+          pages: [
+            { pageid: 1, title: "农场袭击", fullurl: "https://cn.wiki.test/farm", extract: "中文农场" },
+            { title: "走私者", missing: true },
+          ],
+        },
+      });
+    }
+    if (urlObj.hostname === "en.wiki.test") {
+      return jsonResponse({
+        query: {
+          pages: [
+            { pageid: 2, title: "Smugglers", fullurl: "https://en.wiki.test/smugglers", extract: "English Smugglers guide" },
+          ],
+        },
+      });
+    }
+    throw new Error("Unexpected host: " + urlObj.hostname);
+  };
+
+  const pages = await fetchWikiPages(["农场袭击", "走私者"], {
+    apiUrl: "https://cn.wiki.test/w/api.php",
+    enApiUrl: "https://en.wiki.test/w/api.php",
+    fallbackToEn: true,
+    fetchImpl,
+  });
+
+  assert.equal(pages["农场袭击"].title, "农场袭击");
+  assert.equal(pages["农场袭击"].extract, "中文农场");
+  assert.equal(pages["农场袭击"].sourceWiki, undefined);
+
+  assert.ok(pages["走私者"]);
+  assert.equal(pages["走私者"].title, "Smugglers");
+  assert.equal(pages["走私者"].sourceWiki, "en");
+  assert.equal(pages["走私者"].url, "https://en.wiki.test/smugglers");
+  assert.equal(pages["Smugglers"], pages["走私者"]);
+});
+
+test("当启用 mergeEn 时，任务索引合并中英两边的链接并去重", async () => {
+  const fetchImpl = async (url) => {
+    const urlObj = new URL(url);
+    if (urlObj.hostname === "cn.wiki.test") {
+      return jsonResponse({
+        parse: {
+          links: [
+            { ns: 0, title: "农场袭击" },
+            { ns: 0, title: "罗宾的任务" },
+          ],
+        },
+      });
+    }
+    if (urlObj.hostname === "en.wiki.test") {
+      return jsonResponse({
+        parse: {
+          links: [
+            { ns: 0, title: "Farm Assault" },
+            { ns: 0, title: "Smugglers" },
+          ],
+        },
+      });
+    }
+    throw new Error("Unexpected host: " + urlObj.hostname);
+  };
+
+  const indexTitles = await fetchWikiIndex({
+    apiUrl: "https://cn.wiki.test/w/api.php",
+    enApiUrl: "https://en.wiki.test/w/api.php",
+    mergeEn: true,
+    fetchImpl,
+  });
+
+  // "Farm Assault" 会被映射为 "农场袭击"，与已有条目去重
+  // "Smugglers" 会被映射为 "走私者"
+  assert.deepEqual(indexTitles, ["农场袭击", "罗宾的任务", "走私者"]);
+});
+

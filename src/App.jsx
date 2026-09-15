@@ -110,8 +110,10 @@ function makeMarkdown(parsed, quests, wiki) {
       lines.push(`- [${checkbox}] **${item.title}**`);
       lines.push(`  - 当前状态：${item.current}`);
       for (const action of item.next || []) lines.push(`  - [ ] ${action}`);
-      const source = wiki.pages?.[item.wikiTitle]?.url || item.wikiUrl;
-      if (source) lines.push(`  - 攻略来源：${source}`);
+      const page = wiki.pages?.[item.wikiTitle] || (item.enWikiTitle && wiki.pages?.[item.enWikiTitle]);
+      const isEn = page?.sourceWiki === "en";
+      const source = page?.url || (isEn ? item.enWikiUrl : item.wikiUrl) || item.wikiUrl;
+      if (source) lines.push(`  - 攻略来源：${source}${isEn ? "（英文原站兜底）" : ""}`);
       lines.push("");
     }
   }
@@ -203,6 +205,7 @@ function SyncBar({ wiki, onRefresh, disabled }) {
   const partial = wiki.source === "partial";
   const cached = wiki.source === "cache";
   const indexSource = wiki.indexSource || (live ? "live" : cached ? "cache" : "offline");
+  const enCount = Object.values(wiki.pages || {}).filter((p) => p?.sourceWiki === "en").length;
   return (
     <div className="sync-bar">
       <div className={`sync-state ${wiki.loading ? "is-loading" : ""}`}>
@@ -215,14 +218,14 @@ function SyncBar({ wiki, onRefresh, disabled }) {
         )}
         <span>
           {wiki.loading
-            ? "正在同步欲都孤儿中文攻略站…"
+            ? "正在联网同步双源攻略…"
             : live
-              ? `攻略已于 ${formatSyncTime(wiki.syncedAt)} 实时同步`
+              ? `攻略已于 ${formatSyncTime(wiki.syncedAt)} 实时同步${enCount > 0 ? `（含 ${enCount} 篇英文原站兜底）` : ""}`
               : partial
-                ? `部分攻略已于 ${formatSyncTime(wiki.syncedAt)} 实时同步`
+                ? `部分攻略已于 ${formatSyncTime(wiki.syncedAt)} 实时同步${enCount > 0 ? `（含 ${enCount} 篇英文原站兜底）` : ""}`
               : cached
                 ? `实时连接失败，使用 ${formatSyncTime(wiki.syncedAt)} 的缓存`
-                : "尚未连接中文攻略站"}
+                : "尚未连接攻略站"}
           {!wiki.loading && wiki.indexTitles?.length
             ? ` · ${indexSource === "live" ? "在线" : "缓存"}任务索引 ${wiki.indexTitles.length} 页`
             : ""}
@@ -285,7 +288,8 @@ function SideRail({ active, counts, onChange }) {
 function TaskRow({ task, page, expanded, onExpand, onConfirm, onUndo }) {
   const meta = STATUS_META[task.status];
   const StatusIcon = meta.icon;
-  const sourceUrl = page?.url || task.wikiUrl;
+  const isEn = page?.sourceWiki === "en";
+  const sourceUrl = page?.url || (isEn ? task.enWikiUrl : task.wikiUrl) || task.wikiUrl;
   return (
     <article className={`task-row status-${task.status}`}>
       <div className="task-main-grid">
@@ -320,8 +324,9 @@ function TaskRow({ task, page, expanded, onExpand, onConfirm, onUndo }) {
           )}
         </div>
         <div className="task-source-cell">
-          <a href={sourceUrl} target="_blank" rel="noreferrer">
-            中文攻略：{localizeWikiTitle(page?.title || task.wikiTitle)}
+          <a href={sourceUrl} target="_blank" rel="noreferrer" title={isEn ? "源自英文官方 Wiki（已做本地化映射）" : "源自官方中文 Wiki"}>
+            {isEn ? "英文原站：" : "中文攻略："}
+            {localizeWikiTitle(page?.title || task.wikiTitle)}
             <ExternalLink aria-hidden="true" />
           </a>
           <button
@@ -344,8 +349,8 @@ function TaskRow({ task, page, expanded, onExpand, onConfirm, onUndo }) {
             </ul>
           </div>
           <div>
-            <h4><Wifi aria-hidden="true" /> 在线攻略摘要</h4>
-            <p>{page?.extract ? localizeKnownTerms(page.extract) : "中文攻略站没有返回这页的摘要；仍可打开页面查看完整攻略。"}</p>
+            <h4><Wifi aria-hidden="true" /> {isEn ? "英文原站摘要（本地化对照）" : "在线攻略摘要"}</h4>
+            <p>{page?.extract ? localizeKnownTerms(page.extract) : "攻略站没有返回这页的摘要；仍可打开页面查看完整攻略。"}</p>
             {page?.revisionAt ? <small>页面修订时间：{formatSyncTime(page.revisionAt)}</small> : null}
           </div>
           {task.status === "uncertain" ? (
@@ -418,8 +423,8 @@ export default function App() {
       const titles = getWikiTitles();
       const [cacheResult, pageResult, indexResult] = await Promise.allSettled([
         loadWikiCache(titles),
-        fetchWikiPages(titles),
-        fetchWikiIndex(),
+        fetchWikiPages(titles, { fallbackToEn: true }),
+        fetchWikiIndex({ mergeEn: true }),
       ]);
       const cache = cacheResult.status === "fulfilled"
         ? cacheResult.value

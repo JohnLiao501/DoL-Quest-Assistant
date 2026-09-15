@@ -10,6 +10,8 @@ import {
   localizeTempleRank,
   localizeWikiTitle,
   localizeWraithState,
+  toEnglishWikiTitle,
+  toChineseWikiTitle,
 } from "../src/lib/localization.js";
 
 test("存档中的常见英文枚举值会显示为中文", () => {
@@ -95,3 +97,15 @@ test("中文攻略摘要中的已知英文人名会按 Wiki 译名替换", () =>
     "咖啡馆任务。本页译自英文攻略站，内容对应较早的汉化版本。",
   );
 });
+
+test("支持中英任务标题双向转换与英文维基标题自动汉化", () => {
+  assert.equal(toEnglishWikiTitle("农场袭击"), "Farm Assault");
+  assert.equal(toEnglishWikiTitle("走私者"), "Smugglers");
+  assert.equal(toChineseWikiTitle("Farm Assault"), "农场袭击");
+  assert.equal(toChineseWikiTitle("Smugglers"), "走私者");
+  assert.equal(toChineseWikiTitle("Docks Infiltration"), "潜入码头");
+  assert.equal(localizeWikiTitle("Farm Assault"), "农场袭击");
+  assert.equal(localizeWikiTitle("Smugglers"), "走私者");
+  assert.equal(localizeWikiTitle("Gwylan's Rituals"), "格威兰的仪式");
+});
+

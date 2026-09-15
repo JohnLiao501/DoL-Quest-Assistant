@@ -200,10 +200,91 @@ const PLAY_ROLES = {
   Taylor: "泰勒",
 };
 
+export const QUEST_BILINGUAL_TITLES = [
+  { en: "Bailey's Payments", cn: "贝利的付款" },
+  { en: "Blackmailed by Leighton", cn: "礼顿的勒索" },
+  { en: "Blackmailing Leighton", cn: "勒索礼顿" },
+  { en: "Cafe Campaign", cn: "咖啡馆活动" },
+  { en: "Charlie's Jobs", cn: "查理的工作" },
+  { en: "Chastity Vow", cn: "贞洁誓言" },
+  { en: "Community Service", cn: "社会服务" },
+  { en: "Danube Street Burglary", cn: "在多瑙河街入室盗窃" },
+  { en: "Danube Street Jobs", cn: "在多瑙河街寻找工作" },
+  { en: "Detention", cn: "留堂" },
+  { en: "Dismissing Avery", cn: "放逐艾弗里" },
+  { en: "Dismissing Kylar", cn: "放逐凯拉尔" },
+  { en: "Dismissing NPCs", cn: "放逐NPC" },
+  { en: "Dismissing Whitney", cn: "放逐惠特尼" },
+  { en: "Docks Infiltration", cn: "潜入码头" },
+  { en: "Doren's Concerns", cn: "多伦的担忧" },
+  { en: "Eden's Halloween", cn: "伊甸的万圣节" },
+  { en: "Eden's Christmas", cn: "伊甸的圣诞节" },
+  { en: "Eden's Valentines", cn: "伊甸的情人节" },
+  { en: "Farm Assault", cn: "农场袭击" },
+  { en: "Festivities", cn: "节日" },
+  { en: "Gwylan's Rituals", cn: "格威兰的仪式" },
+  { en: "Kylar's Halloween", cn: "凯拉尔的万圣节" },
+  { en: "Kylar's Kidnapping", cn: "凯拉尔的绑架" },
+  { en: "Landry's Request", cn: "兰德里的请求" },
+  { en: "Leighton's Inspections", cn: "礼顿的检查" },
+  { en: "Locker Raid", cn: "洗劫锁柜" },
+  { en: "Main Quests", cn: "主线任务" },
+  { en: "Maths Competition", cn: "数学竞赛" },
+  { en: "Moor Abduction", cn: "在荒原被绑架" },
+  { en: "Night Monster", cn: "夜魔" },
+  { en: "Personal Quests", cn: "个人任务" },
+  { en: "Pillory", cn: "颈手枷" },
+  { en: "Police Infiltration", cn: "渗透警局" },
+  { en: "Repeatable Quests", cn: "重复任务" },
+  { en: "Rite of Defilement", cn: "亵渎仪式" },
+  { en: "Rite of Promise", cn: "承诺仪式" },
+  { en: "Robin's Christmas", cn: "罗宾的圣诞节" },
+  { en: "Robin's Halloween", cn: "罗宾的万圣节" },
+  { en: "Robin's Quest", cn: "罗宾的任务" },
+  { en: "Sabotaging Remy", cn: "破坏雷米农场" },
+  { en: "Schism", cn: "分裂" },
+  { en: "School Exams", cn: "学校考试" },
+  { en: "School Play", cn: "舞台剧" },
+  { en: "School Projects", cn: "学校项目" },
+  { en: "Science Fair", cn: "科学博览会" },
+  { en: "Smugglers", cn: "走私者" },
+  { en: "Stimulant Kidnapping", cn: "因兴奋剂被绑架" },
+  { en: "Story Quests", cn: "故事任务" },
+  { en: "Taking Flight", cn: "学习飞行" },
+  { en: "Temple Initiation", cn: "神殿晋升" },
+  { en: "Temple", cn: "神殿" },
+  { en: "Tenyclus", cn: "Tenyclus" },
+  { en: "Trial by Fire", cn: "火的考验" },
+  { en: "Whitney's Halloween", cn: "惠特尼的万圣节" },
+  { en: "Avery", cn: "艾弗里" },
+  { en: "Danube Street", cn: "多瑙河街" },
+  { en: "Domus Street Burglary", cn: "在宅邸街入室盗窃" },
+  { en: "Domus Street Jobs", cn: "在宅邸街寻找工作" },
+  { en: "Domus Street Night Hunting", cn: "在宅邸街夜间狩猎" },
+  { en: "Exhibitionism", cn: "暴露任务" },
+];
+
+const EN_TO_CN_QUEST_TITLES = Object.fromEntries(
+  QUEST_BILINGUAL_TITLES.map(({ en, cn }) => [en, cn]),
+);
+const CN_TO_EN_QUEST_TITLES = Object.fromEntries(
+  QUEST_BILINGUAL_TITLES.map(({ en, cn }) => [cn, en]),
+);
+
 const WIKI_TITLES = {
   Tenyclus: "街机游戏最终事件",
   "放逐NPC": "放逐非玩家角色",
 };
+
+export function toEnglishWikiTitle(title) {
+  const clean = String(title || "").trim();
+  return CN_TO_EN_QUEST_TITLES[clean] || clean;
+}
+
+export function toChineseWikiTitle(title) {
+  const clean = String(title || "").trim();
+  return EN_TO_CN_QUEST_TITLES[clean] || clean;
+}
 
 const TEXT_REPLACEMENTS = [
   ["Degrees of Lewdity CN Wiki", "欲都孤儿中文攻略站"],
@@ -263,7 +344,7 @@ export function localizePlayRole(value) {
 }
 
 export function localizeWikiTitle(value) {
-  return WIKI_TITLES[value] || localizeKnownTerms(value);
+  return WIKI_TITLES[value] || EN_TO_CN_QUEST_TITLES[value] || localizeKnownTerms(value);
 }
 
 export function localizeKnownTerms(value) {

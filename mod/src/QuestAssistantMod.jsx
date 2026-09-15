@@ -98,7 +98,10 @@ function makeMarkdown(parsed, quests, wiki) {
       lines.push(`- [${status === "completed" ? "x" : " "}] **${item.title}**`);
       lines.push(`  - 当前状态：${item.current}`);
       for (const action of item.next || []) lines.push(`  - [ ] ${action}`);
-      lines.push(`  - 攻略：${wiki.pages?.[item.wikiTitle]?.url || item.wikiUrl}`, "");
+      const page = wiki.pages?.[item.wikiTitle] || (item.enWikiTitle && wiki.pages?.[item.enWikiTitle]);
+      const isEn = page?.sourceWiki === "en";
+      const source = page?.url || (isEn ? item.enWikiUrl : item.wikiUrl) || item.wikiUrl;
+      lines.push(`  - 攻略：${source}${isEn ? "（英文原站兜底）" : ""}`, "");
     }
   }
   lines.push("> 判定以当前存档变量和游戏逻辑为主；中文攻略内容可能落后于游戏版本。", "");
@@ -120,6 +123,7 @@ function downloadMarkdown(parsed, quests, wiki) {
 function SyncStatus({ wiki, onRefresh }) {
   const hasCache = Object.keys(wiki.pages || {}).length > 0;
   const connected = wiki.source === "live";
+  const enCount = Object.values(wiki.pages || {}).filter((p) => p?.sourceWiki === "en").length;
   return (
     <div className={`dqa-sync dqa-sync-${wiki.source}`}>
       <div className="dqa-sync-copy">
@@ -127,12 +131,12 @@ function SyncStatus({ wiki, onRefresh }) {
         <div>
           <strong>
             {wiki.loading
-              ? "正在连接中文攻略站…"
+              ? "正在联网同步双源攻略…"
               : connected
-                ? `攻略已于 ${formatTime(wiki.syncedAt)} 同步`
+                ? `攻略已于 ${formatTime(wiki.syncedAt)} 同步${enCount > 0 ? `（含 ${enCount} 篇英文原站兜底）` : ""}`
                 : hasCache
                   ? `实时连接不可用，正在使用 ${formatTime(wiki.syncedAt)} 的缓存`
-                  : "尚未取得中文攻略内容"}
+                  : "尚未取得攻略内容"}
           </strong>
           <span>{wiki.error || `任务索引 ${wiki.indexTitles?.length || 0} 页 · 存档判定始终可用`}</span>
         </div>
@@ -194,13 +198,14 @@ function TaskRow({ task, page, expanded, onToggle, onConfirm, onUndo }) {
           </section>
           {excerpt ? (
             <section className="dqa-wiki-excerpt">
-              <h4>中文攻略摘要</h4>
+              <h4>{page?.sourceWiki === "en" ? "英文原站摘要（本地化对照）" : "中文攻略摘要"}</h4>
               <p>{excerpt}</p>
             </section>
           ) : null}
           <div className="dqa-task-actions">
-            <a href={page?.url || task.wikiUrl} target="_blank" rel="noreferrer">
-              中文攻略：{localizeWikiTitle(page?.title || task.wikiTitle)} <ExternalLink />
+            <a href={page?.url || (page?.sourceWiki === "en" ? task.enWikiUrl : task.wikiUrl) || task.wikiUrl} target="_blank" rel="noreferrer" title={page?.sourceWiki === "en" ? "源自英文官方 Wiki（已做本地化映射）" : "源自官方中文 Wiki"}>
+              {page?.sourceWiki === "en" ? "英文原站：" : "中文攻略："}
+              {localizeWikiTitle(page?.title || task.wikiTitle)} <ExternalLink />
             </a>
             {task.manualConfirmed ? (
               <button type="button" className="dqa-undo" onClick={onUndo}>撤销人工确认</button>

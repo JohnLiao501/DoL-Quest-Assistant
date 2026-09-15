@@ -173,7 +173,7 @@ function validateWikiUrl(value) {
   try {
     const url = new URL(value);
     return url.protocol === "https:"
-      && url.hostname === "degreesoflewditycn.miraheze.org"
+      && (url.hostname === "degreesoflewditycn.miraheze.org" || url.hostname === "degreesoflewdity.miraheze.org")
       && url.pathname.startsWith("/wiki/");
   } catch {
     return false;
@@ -185,13 +185,16 @@ function normalizeCachedPage(key, page) {
   const title = String(page.title || "").trim();
   const extract = String(page.extract || "").replace(/\s+/g, " ").trim();
   const revisionAt = page.revisionAt == null ? null : String(page.revisionAt);
+  const sourceWiki = page.sourceWiki === "en" ? "en" : undefined;
   if (!key || key.length > 200 || !title || title.length > 200) {
     throw requestError("攻略页面标题无效。");
   }
   if (!validateWikiUrl(page.url) || extract.length > 900 || (revisionAt && revisionAt.length > 64)) {
     throw requestError(`攻略页面“${key}”包含无效字段。`);
   }
-  return { title, url: page.url, extract, revisionAt };
+  const result = { title, url: page.url, extract, revisionAt };
+  if (sourceWiki) result.sourceWiki = sourceWiki;
+  return result;
 }
 
 function normalizeCacheWrite(payload) {

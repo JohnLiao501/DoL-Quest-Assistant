@@ -330,7 +330,21 @@ svg { display: block; flex: none; }
 .dqa-task-detail section { display: grid; gap: 4px; }
 .dqa-task-detail h4 { margin: 0; color: #8ee075; font-size: 11px; letter-spacing: .06em; }
 .dqa-task-detail ul { display: grid; gap: 3px; margin: 0; padding-left: 17px; color: #c4c9bd; font-size: 11px; line-height: 1.45; }
-.dqa-wiki-excerpt p { max-height: 72px; overflow: hidden; margin: 0; color: #b2b8ab; font-size: 11px; line-height: 1.5; }
+.dqa-wiki-excerpt p {
+  max-height: 180px;
+  overflow-y: auto;
+  margin: 0;
+  padding-right: 6px;
+  color: #b2b8ab;
+  font-size: 11.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  scrollbar-width: thin;
+  scrollbar-color: #555d4e transparent;
+}
+.dqa-wiki-excerpt p::-webkit-scrollbar { width: 5px; }
+.dqa-wiki-excerpt p::-webkit-scrollbar-thumb { background: #555d4e; border-radius: 4px; }
 .dqa-task-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 3px; }
 .dqa-task-actions a { display: inline-flex; align-items: center; gap: 4px; color: #6bb3f2; font-size: 11px; text-decoration: none; }
 .dqa-task-actions a:hover { text-decoration: underline; color: #94cbff; }
