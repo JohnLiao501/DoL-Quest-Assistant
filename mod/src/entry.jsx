@@ -1,6 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import QuestAssistantMod from "./QuestAssistantMod.jsx";
+import { isJournalOverlay } from "./overlay.js";
 import styles from "./mod.css?inline";
 
 const HOST_ID = "dol-quest-assistant-mod-root";
@@ -109,21 +110,8 @@ export function renderJournalTab() {
   doRenderJournalTab(container);
 }
 
-function isJournalOverlay() {
-  const overlay = document.getElementById("customOverlay");
-  if (!overlay) return false;
-  const dataOverlay = overlay.getAttribute("data-overlay");
-  if (dataOverlay === "journal" || dataOverlay === "journalNotes" || dataOverlay === "journalQuests") {
-    return true;
-  }
-  const tabs = overlay.querySelector("#overlayTabs");
-  if (!tabs) return false;
-  const text = tabs.textContent || "";
-  return text.includes("Journal") || text.includes("日志") || text.includes("Notes") || text.includes("笔记");
-}
-
 function ensureJournalTabButton() {
-  if (!isJournalOverlay()) return;
+  if (!isJournalOverlay(document.getElementById("customOverlay"))) return;
   const tabs = document.getElementById("overlayTabs");
   if (!tabs) return;
 

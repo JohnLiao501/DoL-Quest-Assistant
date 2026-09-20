@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { isJournalOverlay } from "../mod/src/overlay.js";
+
+function overlay(type, labels) {
+  return {
+    getAttribute: () => type,
+    querySelectorAll: () => labels.map((textContent) => ({ textContent })),
+  };
+}
 
 test("ModLoader 轻量启动器可以被 preload 返回表达式包装", () => {
   const content = readFileSync(new URL("../mod/runtime/preload.js", import.meta.url), "utf8");
@@ -24,6 +32,13 @@ test("boot.json 使用提前注入主程序和轻量 preload，不注册易碎�
   assert.deepEqual(boot.scriptFileList_inject_early, ["dist/DoLQuestAssistant.js"]);
   assert.deepEqual(boot.scriptFileList_preload, ["dist/preload/preload.js"]);
   assert.deepEqual(boot.replacePatchList, []);
+});
+
+test("任务页签只挂载到日志，不把模组管理器的加载日志误判为日志", () => {
+  assert.equal(isJournalOverlay(overlay("journal", ["日志", "笔记"])), true);
+  assert.equal(isJournalOverlay(overlay("modloader", ["通用", "加载日志"])), false);
+  assert.equal(isJournalOverlay(overlay("", ["日志", "笔记"])), true);
+  assert.equal(isJournalOverlay(overlay("", ["加载日志"])), false);
 });
 
 test("Mod 主程序等待首个场景完成，不在 storyready 或 ModLoader 加载阶段挂载", () => {
