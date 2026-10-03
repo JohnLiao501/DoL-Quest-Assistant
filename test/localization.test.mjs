@@ -86,6 +86,17 @@ test("事件 passage 未单独登记时会使用稳定地区变量，不再误�
   assert.equal(localizePassage("Custom Mod Passage", "custom_mod_location"), "未收录场景（原名：Custom Mod Passage）");
 });
 
+test("0.5.12.13 新增栈桥与鱼饵店场景及攻略主题显示中文", () => {
+  assert.equal(localizePassage("Mer Pier"), "梅尔街栈桥");
+  assert.equal(localizePassage("Bait Shop"), "鱼饵店");
+  assert.equal(localizePassage("Bait Shop Give Fish", "mer_pier"), "梅尔街栈桥");
+  assert.equal(localizeGameLocation("mer_pier"), "梅尔街栈桥");
+  assert.equal(toEnglishWikiTitle("钓鱼"), "Fishing");
+  assert.equal(toEnglishWikiTitle("伦恩"), "Wren");
+  assert.equal(toEnglishWikiTitle("精神病院"), "Asylum");
+  assert.equal(localizeWikiTitle("Wren"), "伦恩");
+});
+
 test("中文攻略摘要中的已知英文人名会按 Wiki 译名替换", () => {
   assert.equal(
     localizeKnownTerms("Sydney 与 Jordan 谈论 Alex 和 Quinn。"),
@@ -108,4 +119,3 @@ test("支持中英任务标题双向转换与英文维基标题自动汉化", ()
   assert.equal(localizeWikiTitle("Smugglers"), "走私者");
   assert.equal(localizeWikiTitle("Gwylan's Rituals"), "格威兰的仪式");
 });
-

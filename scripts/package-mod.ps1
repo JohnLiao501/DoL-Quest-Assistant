@@ -17,6 +17,10 @@ if ($modVersion -notmatch '^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$') {
 $archiveName = "DoLQuestAssistant-v{0}.mod.zip" -f $modVersion
 $archivePath = [IO.Path]::GetFullPath((Join-Path $releaseDirectory $archiveName))
 
+if (Test-Path -LiteralPath $archivePath) {
+  throw "Release package already exists: $archivePath. Increment the Mod version before packaging."
+}
+
 if (-not (Test-Path -LiteralPath (Join-Path $distDirectory "DoLQuestAssistant.js"))) {
   throw "Mod build output is missing. Run npm run build:mod first."
 }
@@ -47,7 +51,7 @@ if (Test-Path -LiteralPath (Join-Path $modDirectory "patches")) {
   Copy-Item -LiteralPath (Join-Path $modDirectory "patches") -Destination $stageDirectory -Recurse
 }
 
-Compress-Archive -Path (Join-Path $stageDirectory "*") -DestinationPath $archivePath -CompressionLevel Optimal -Force
+Compress-Archive -Path (Join-Path $stageDirectory "*") -DestinationPath $archivePath -CompressionLevel Optimal
 Remove-Item -LiteralPath $stageDirectory -Recurse -Force
 
 $archive = Get-Item -LiteralPath $archivePath

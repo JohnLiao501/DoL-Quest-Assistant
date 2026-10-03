@@ -29,13 +29,19 @@ export function readCurrentGameState(scope = globalThis) {
     || "未知";
   if (!isActiveGameState(variables, passage)) return null;
 
+  const savedVersion = Array.isArray(variables.saveVersions)
+    ? variables.saveVersions.at(-1)
+    : null;
+
   return {
     fileName: "当前游戏存档",
     gameId: "degrees-of-lewdity",
-    gameVersion: variables.saveVersion
-      || variables.version
+    gameVersion: scope?.StartConfig?.version
       || scope?.dolVersion
-      || "0.5.11.9",
+      || savedVersion
+      || variables.saveVersion
+      || variables.version
+      || "未知",
     location: variables.location || variables.sublocation || "",
     passage: passageName(passage),
     profileName: variables.saveName || variables.name || "未命名角色",

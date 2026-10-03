@@ -47,6 +47,8 @@ const PASSAGE_NAMES = {
   "Livestock Field": "雷米农场",
   Meadow: "草地",
   "Mer Street": "梅尔街",
+  "Mer Pier": "梅尔街栈桥",
+  "Bait Shop": "鱼饵店",
   Moor: "荒原",
   "Nightingale Street": "南丁格尔街",
   "Ocean Breeze": "海风咖啡馆",
@@ -72,7 +74,7 @@ const PASSAGE_NAMES = {
   "Wolf Street": "狼街",
 };
 
-// DoL 0.5.11.9 中所有字面量 $location 值，以及 setup.locations
+// DoL 0.5.12.13 中所有字面量 $location 值，以及 setup.locations
 // 继承后可能写入 $location 的值。passage 是事件页时，用它确定稳定地区。
 const GAME_LOCATION_NAMES = {
   adult_shop: "成人用品店",
@@ -123,6 +125,7 @@ const GAME_LOCATION_NAMES = {
   landfill: "垃圾填埋场",
   market: "市场",
   meadow: "草地",
+  mer_pier: "梅尔街栈桥",
   mines: "矿井",
   moor: "荒原",
   museum: "博物馆",
@@ -182,8 +185,9 @@ const ESCAPE_ROUTES = {
 };
 
 const AVERY_FATES = {
-  fallen: "已堕落",
-  kicked: "已被逐出",
+  fallen: "从高塔坠落（未救援）",
+  ascended: "已飞升",
+  kicked: "被踢下高塔身亡",
   saved: "已获救",
 };
 
@@ -221,6 +225,9 @@ export const QUEST_BILINGUAL_TITLES = [
   { en: "Eden's Christmas", cn: "伊甸的圣诞节" },
   { en: "Eden's Valentines", cn: "伊甸的情人节" },
   { en: "Farm Assault", cn: "农场袭击" },
+  { en: "Fishing", cn: "钓鱼" },
+  { en: "Wren", cn: "伦恩" },
+  { en: "Asylum", cn: "精神病院" },
   { en: "Festivities", cn: "节日" },
   { en: "Gwylan's Rituals", cn: "格威兰的仪式" },
   { en: "Kylar's Halloween", cn: "凯拉尔的万圣节" },
@@ -295,6 +302,7 @@ const TEXT_REPLACEMENTS = [
   ["NPC", "非玩家角色"],
   ["DOL", "欲都孤儿"],
   ["Tenyclus", "泰尼克勒斯"],
+  ["Wren", "伦恩"],
   ["Danube", "多瑙河街"],
   ...Object.entries(CHARACTER_NAMES),
 ].sort(([left], [right]) => right.length - left.length);
@@ -332,7 +340,7 @@ export function localizeEscapeRoute(value) {
 }
 
 export function localizeAveryFate(value) {
-  return mappedValue(value, AVERY_FATES, value ? "结局已确定" : "未出现");
+  return mappedValue(value, AVERY_FATES, value ? "未识别结局" : "未出现");
 }
 
 export function localizeMathsProjectState(value) {

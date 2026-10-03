@@ -35,6 +35,32 @@ test("V 不存在时回退到 SugarCube.State.variables", () => {
   assert.equal(readCurrentGameState(scope).profileName, "回退角色");
 });
 
+test("读取旧存档后优先显示实际运行的游戏版本", () => {
+  const variables = {
+    saveVersion: "0.5.11.9",
+    saveVersions: ["0.5.11.9", "0.5.12.13"],
+  };
+  const scope = { V: variables, StartConfig: { version: "0.5.12.13" } };
+  assert.equal(readCurrentGameState(scope).gameVersion, "0.5.12.13");
+  assert.deepEqual(variables.saveVersions, ["0.5.11.9", "0.5.12.13"]);
+  assert.equal(variables.saveVersion, "0.5.11.9");
+});
+
+test("运行时版本不可用时读取存档版本历史的最新一项", () => {
+  const variables = {
+    saveVersion: "0.5.11.9",
+    saveVersions: ["0.5.11.9", "0.5.12.13"],
+  };
+  assert.equal(readCurrentGameState({ V: variables }).gameVersion, "0.5.12.13");
+  assert.equal(readCurrentGameState({ V: variables, dolVersion: "0.5.12.14" }).gameVersion, "0.5.12.14");
+});
+
+test("版本缺失时显示未知，不假定某个游戏版本", () => {
+  assert.equal(readCurrentGameState({ V: {} }).gameVersion, "未知");
+  assert.equal(readCurrentGameState({ V: { saveVersions: [] } }).gameVersion, "未知");
+  assert.equal(readCurrentGameState({ V: { version: "0.5.11.9" } }).gameVersion, "0.5.11.9");
+});
+
 test("人工确认只写入命名空间，不改动原任务变量", () => {
   const variables = { farm_stage: 4 };
   const scope = { V: variables };

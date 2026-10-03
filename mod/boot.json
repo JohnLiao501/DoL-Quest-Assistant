@@ -1,6 +1,6 @@
 {
   "name": "DoLQuestAssistant",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "nickName": {
     "cn": "欲都孤儿任务助手",
     "en": "DoL Quest Assistant"
@@ -32,7 +32,7 @@
     },
     {
       "modName": "GameVersion",
-      "version": "=0.5.11.9"
+      "version": "=0.5.12.13"
     }
   ]
 }
